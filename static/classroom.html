@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Classroom - ESL Academy</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <style>
+        .classroom-container {
+            display: flex;
+            height: 100vh;
+            background: #f8fafc;
+        }
+        
+        .video-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            flex: 1;
+            margin-bottom: 1rem;
+        }
+        
+        .video-card {
+            background: #000;
+            border-radius: 8px;
+            position: relative;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .video-card.main {
+            grid-column: 1 / -1;
+            aspect-ratio: 16/9;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .control-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .control-btn.mute { background: #ef4444; color: white; }
+        .control-btn.video { background: #10b981; color: white; }
+        .control-btn.share { background: #3b82f6; color: white; }
+        .control-btn.leave { background: #6b7280; color: white; }
+        
+        .chat-sidebar {
+            width: 300px;
+            background: white;
+            border-left: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #4f46e5;
+        }
+        
+        .message-text {
+            margin-top: 0.25rem;
+            color: #374151;
+        }
+        
+        .chat-input {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .chat-input input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="classroom-container">
+        <div class="video-section">
+            <div class="video-grid">
+                <div class="video-card main">
+                    <div>🎥 Teacher's Screen</div>
+                </div>
+                <div class="video-card">
+                    <div>👨‍🏫 Teacher</div>
+                </div>
+                <div class="video-card">
+                    <div>👩‍🎓 Student 1</div>
+                </div>
+                <div class="video-card">
+                    <div>👨‍🎓 Student 2</div>
+                </div>
+                <div class="video-card">
+                    <div>👩‍🎓 Student 3</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn mute" onclick="toggleMute()">🎤 Mute</button>
+                <button class="control-btn video" onclick="toggleVideo()">📹 Video</button>
+                <button class="control-btn share" onclick="shareScreen()">🖥️ Share</button>
+                <button class="control-btn leave" onclick="leaveClass()">📞 Leave</button>
+            </div>
+        </div>
+        
+        <div class="chat-sidebar">
+            <div class="chat-header">
+                <h3>💬 Class Chat</h3>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message">
+                    <div class="message-sender">Teacher</div>
+                    <div class="message-text">Welcome to today's lesson!</div>
+                </div>
+                <div class="message">
+                    <div class="message-sender">Student 1</div>
+                    <div class="message-text">Thank you! Excited to learn.</div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleEnter(event)">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        let isMuted = false;
+        let isVideoOff = false;
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            const token = localStorage.getItem('authToken');
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws?token=${token}&room=classroom`);
+            
+            ws.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                addMessageToChat(message.username, message.message);
+            };
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.querySelector('.control-btn.mute');
+            btn.textContent = isMuted ? '🔇 Unmute' : '🎤 Mute';
+            btn.style.background = isMuted ? '#ef4444' : '#10b981';
+        }
+
+        function toggleVideo() {
+            isVideoOff = !isVideoOff;
+            const btn = document.querySelector('.control-btn.video');
+            btn.textContent = isVideoOff ? '📹 Start Video' : '📹 Stop Video';
+            btn.style.background = isVideoOff ? '#ef4444' : '#10b981';
+        }
+
+        function shareScreen() {
+            alert('Screen sharing feature coming soon!');
+        }
+
+        function leaveClass() {
+            if (confirm('Are you sure you want to leave the classroom?')) {
+                window.close();
+            }
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message && ws) {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const chatMessage = {
+                    user_id: currentUser.id,
+                    username: currentUser.first_name,
+                    message: message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                ws.send(JSON.stringify(chatMessage));
+                input.value = '';
+            }
+        }
+
+        function addMessageToChat(sender, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.innerHTML = `
+                <div class="message-sender">${sender}</div>
+                <div class="message-text">${message}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initWebSocket();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESL Learning Platform - Master English Together</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <h1>🌟 ESL Academy</h1>
+            </div>
+            <div class="nav-links">
+                <button class="btn btn-outline" onclick="showLogin()">Login</button>
+                <button class="btn btn-primary" onclick="showRegister()">Get Started</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Master English with Expert Teachers</h1>
+                <p>Join thousands of students learning English through interactive live classes, digital books, and collaborative learning experiences.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-large btn-primary" onclick="showRegister('student')">Start Learning</button>
+                    <button class="btn btn-large btn-outline" onclick="showRegister('teacher')">Teach With Us</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <h2>Why Choose ESL Academy?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎓</div>
+                        <h3>Live Classrooms</h3>
+                        <p>Interactive real-time sessions with certified teachers and fellow students</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <h3>Digital Library</h3>
+                        <p>Access hundreds of ESL books and materials tailored to your level</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎥</div>
+                        <h3>Video Learning</h3>
+                        <p>Watch educational videos together with synchronized learning experiences</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Secure Platform</h3>
+                        <p>Your data is protected with enterprise-grade security measures</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Welcome Back!</h2>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+            </form>
+            <p>Don't have an account? <a href="#" onclick="showRegister()">Sign up here</a></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>Join ESL Academy</h2>
+            <form id="registerForm">
+                <select id="userType" required>
+                    <option value="">I am a...</option>
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+                <input type="text" id="firstName" placeholder="First Name" required>
+                <input type="text" id="lastName" placeholder="Last Name" required>
+                <input type="email" id="registerEmail" placeholder="Email" required>
+                <input type="password" id="registerPassword" placeholder="Password (min 8 chars)" required>
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+            </form>
+            <p>Already have an account? <a href="#" onclick="showLogin()">Login here</a></p>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

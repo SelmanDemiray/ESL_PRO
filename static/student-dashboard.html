@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - ESL Academy</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📚 ESL Academy</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#overview" class="nav-item active">📊 Overview</a>
+                <a href="#classrooms" class="nav-item">🎓 Live Classrooms</a>
+                <a href="#books" class="nav-item">📖 Digital Books</a>
+                <a href="#videos" class="nav-item">🎥 Video Library</a>
+                <a href="#progress" class="nav-item">📈 My Progress</a>
+                <a href="#profile" class="nav-item">👤 Profile</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-outline" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Welcome back, <span id="userName">Student</span>!</h1>
+                <p>Continue your English learning journey</p>
+            </header>
+
+            <section id="overview" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <h3>5</h3>
+                            <p>Classes This Week</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-info">
+                            <h3>12hrs</h3>
+                            <p>Study Time</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-info">
+                            <h3>B2</h3>
+                            <p>Current Level</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h2>Quick Actions</h2>
+                    <div class="action-grid">
+                        <button class="action-card" onclick="joinLiveClass()">
+                            <div class="action-icon">🎯</div>
+                            <h3>Join Live Class</h3>
+                            <p>Next class starts in 15 minutes</p>
+                        </button>
+                        <button class="action-card" onclick="openBooks()">
+                            <div class="action-icon">📚</div>
+                            <h3>Continue Reading</h3>
+                            <p>Pick up where you left off</p>
+                        </button>
+                        <button class="action-card" onclick="watchVideos()">
+                            <div class="action-icon">🎬</div>
+                            <h3>Watch Together</h3>
+                            <p>Join a video session</p>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="classrooms" class="content-section">
+                <h2>Live Classrooms</h2>
+                <div class="classroom-list">
+                    <div class="classroom-card live">
+                        <div class="classroom-status">🔴 LIVE</div>
+                        <h3>Intermediate Conversation</h3>
+                        <p>Teacher: Ms. Johnson</p>
+                        <p>12 students online</p>
+                        <button class="btn btn-primary">Join Now</button>
+                    </div>
+                    <div class="classroom-card upcoming">
+                        <div class="classroom-status">⏰ UPCOMING</div>
+                        <h3>Grammar Basics</h3>
+                        <p>Teacher: Mr. Smith</p>
+                        <p>Starts in 30 minutes</p>
+                        <button class="btn btn-outline">Set Reminder</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
