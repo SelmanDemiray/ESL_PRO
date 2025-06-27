@@ -8,8 +8,23 @@
     <link rel="stylesheet" href="/static/dashboard.css">
 </head>
 <body>
+    <!-- Mobile Topbar (visible only on mobile) -->
+    <div class="mobile-topbar">
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Open menu">
+            &#9776;
+        </button>
+        <span class="mobile-title">ESL Academy</span>
+        <div class="theme-switcher">
+            <label class="switch">
+                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                <span class="slider"></span>
+            </label>
+            <span id="themeLabel">🌙</span>
+        </div>
+    </div>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <div class="dashboard">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>🎓 ESL Academy</h2>
             </div>
@@ -23,12 +38,13 @@
             </nav>
             <div class="sidebar-footer">
                 <button class="btn btn-outline" onclick="logout()">Logout</button>
-                <div class="theme-switcher">
+                <!-- Hide theme-switcher in sidebar on mobile, keep for desktop -->
+                <div class="theme-switcher" style="display:none;" id="sidebarThemeSwitcher">
                     <label class="switch">
-                        <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                        <input type="checkbox" id="themeToggleSidebar" onchange="toggleTheme()">
                         <span class="slider"></span>
                     </label>
-                    <span id="themeLabel">🌙</span>
+                    <span id="themeLabelSidebar">🌙</span>
                 </div>
             </div>
         </aside>

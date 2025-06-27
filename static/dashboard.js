@@ -108,19 +108,65 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     // --- THEME SWITCHER ---
+    function setThemeSwitchers(isDark) {
+        // Main theme toggle (mobile topbar)
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) themeToggle.checked = isDark;
+        const themeLabel = document.getElementById('themeLabel');
+        if (themeLabel) themeLabel.textContent = isDark ? '☀️' : '🌙';
+
+        // Sidebar theme toggle (desktop)
+        const themeToggleSidebar = document.getElementById('themeToggleSidebar');
+        if (themeToggleSidebar) themeToggleSidebar.checked = isDark;
+        const themeLabelSidebar = document.getElementById('themeLabelSidebar');
+        if (themeLabelSidebar) themeLabelSidebar.textContent = isDark ? '☀️' : '🌙';
+    }
     window.toggleTheme = function() {
-        const isDark = document.getElementById('themeToggle').checked;
+        // Always sync both toggles
+        const themeToggle = document.getElementById('themeToggle');
+        const themeToggleSidebar = document.getElementById('themeToggleSidebar');
+        let isDark = false;
+        if (themeToggle && themeToggle.checked) isDark = true;
+        if (themeToggleSidebar && themeToggleSidebar.checked) isDark = true;
         document.body.classList.toggle('dark-theme', isDark);
-        document.getElementById('themeLabel').textContent = isDark ? '☀️' : '🌙';
+        setThemeSwitchers(isDark);
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     };
     // On load, set theme from localStorage
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-theme');
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) themeToggle.checked = true;
-        document.getElementById('themeLabel').textContent = '☀️';
+        setThemeSwitchers(true);
+    } else {
+        document.body.classList.remove('dark-theme');
+        setThemeSwitchers(false);
     }
+    // Sync toggles if either is changed
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleSidebar = document.getElementById('themeToggleSidebar');
+    if (themeToggle) {
+        themeToggle.addEventListener('change', () => {
+            if (themeToggleSidebar) themeToggleSidebar.checked = themeToggle.checked;
+            window.toggleTheme();
+        });
+    }
+    if (themeToggleSidebar) {
+        themeToggleSidebar.addEventListener('change', () => {
+            if (themeToggle) themeToggle.checked = themeToggleSidebar.checked;
+            window.toggleTheme();
+        });
+    }
+    // Show/hide sidebar theme switcher based on screen size
+    function updateSidebarThemeSwitcher() {
+        const sidebarThemeSwitcher = document.getElementById('sidebarThemeSwitcher');
+        if (!sidebarThemeSwitcher) return;
+        if (window.innerWidth > 900) {
+            sidebarThemeSwitcher.style.display = 'flex';
+        } else {
+            sidebarThemeSwitcher.style.display = 'none';
+        }
+    }
+    window.addEventListener('resize', updateSidebarThemeSwitcher);
+    updateSidebarThemeSwitcher();
 
     // --- LESSONS LOGIC ---
     async function loadTeacherLessons() {
@@ -242,6 +288,43 @@ document.addEventListener('DOMContentLoaded', async function() {
         };
     }
 
+    // --- MOBILE SIDEBAR SLIDE-IN LOGIC ---
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    // Show toggle button on mobile
+    function updateSidebarToggleVisibility() {
+        if (window.innerWidth <= 900) {
+            if (sidebarToggleBtn) sidebarToggleBtn.style.display = 'flex';
+        } else {
+            if (sidebarToggleBtn) sidebarToggleBtn.style.display = 'none';
+            if (sidebar) sidebar.classList.remove('open');
+            if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+        }
+    }
+    window.addEventListener('resize', updateSidebarToggleVisibility);
+    updateSidebarToggleVisibility();
+
+    if (sidebarToggleBtn && sidebar && sidebarBackdrop) {
+        sidebarToggleBtn.addEventListener('click', function(e) {
+            sidebar.classList.add('open');
+            sidebarBackdrop.classList.add('active');
+        });
+        sidebarBackdrop.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            sidebarBackdrop.classList.remove('active');
+        });
+        // Close sidebar when a nav item is clicked (on mobile)
+        sidebar.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 900) {
+                    sidebar.classList.remove('open');
+                    sidebarBackdrop.classList.remove('active');
+                }
+            });
+        });
+    }
+
     // Initial load for teacher dashboard
     if (document.getElementById('teacherClassroomList')) {
         await loadTeacherClassrooms();
@@ -256,7 +339,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         await loadTeacherSchedule();
     }
 });
-
+ 
 // Logout function
 function logout() {
     localStorage.removeItem('authToken');

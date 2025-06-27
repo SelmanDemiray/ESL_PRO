@@ -8,8 +8,23 @@
     <link rel="stylesheet" href="/static/dashboard.css">
 </head>
 <body>
+    <!-- Mobile Topbar (visible only on mobile) -->
+    <div class="mobile-topbar">
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Open menu">
+            &#9776;
+        </button>
+        <span class="mobile-title">ESL Academy</span>
+        <div class="theme-switcher">
+            <label class="switch">
+                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                <span class="slider"></span>
+            </label>
+            <span id="themeLabel">🌙</span>
+        </div>
+    </div>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <div class="dashboard">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>📚 ESL Academy</h2>
             </div>
@@ -94,19 +109,6 @@
                 <h2>Live Classrooms</h2>
                 <div class="classroom-list" id="studentClassroomList">
                     <div style="color:#64748b;">No live or upcoming classrooms. Join a class to get started.</div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script src="/static/dashboard.js"></script>
-</body>
-</html>
-                        <h3>Grammar Basics</h3>
-                        <p>Teacher: Mr. Smith</p>
-                        <p>Starts in 30 minutes</p>
-                        <button class="btn btn-outline">Set Reminder</button>
-                    </div>
                 </div>
             </section>
         </main>
