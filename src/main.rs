@@ -14,7 +14,6 @@ mod models;
 mod websocket;
 
 use database::Database;
-use axum::extract::State;
 
 #[derive(Clone)]
 pub struct AppState {

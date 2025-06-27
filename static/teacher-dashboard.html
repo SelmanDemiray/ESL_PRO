@@ -27,6 +27,17 @@
         </aside>
 
         <main class="main-content">
+            <div class="dashboard-header">
+                <div></div>
+                <div class="profile-menu" id="profileMenu">
+                    <div class="avatar" id="profileAvatar"></div>
+                    <span id="profileName"></span>
+                    <div class="dropdown" id="profileDropdown">
+                        <button onclick="openProfile()">Profile</button>
+                        <button onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
             <header class="content-header">
                 <h1>Welcome, <span id="teacherName">Teacher</span>!</h1>
                 <p>Manage your classes and help students succeed</p>

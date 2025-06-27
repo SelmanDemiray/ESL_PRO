@@ -52,7 +52,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             const data = await response.json();
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('currentUser', JSON.stringify(data.user));
-            window.location.href = '/api/dashboard';
+            window.location.href = '/'; // Redirect to home, not /api/dashboard
         } else {
             alert('Invalid credentials. Please try again.');
         }
@@ -91,9 +91,10 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
             const data = await response.json();
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('currentUser', JSON.stringify(data.user));
-            window.location.href = '/api/dashboard';
+            window.location.href = '/'; // Redirect to home, not /api/dashboard
         } else {
-            alert('Registration failed. Email might already be in use.');
+            const errorText = await response.text();
+            alert(errorText || 'Registration failed. Email might already be in use.');
         }
     } catch (error) {
         alert('Registration failed. Please try again.');
@@ -111,3 +112,30 @@ async function authenticatedFetch(url, options = {}) {
         },
     });
 }
+
+// On page load, if authenticated, fetch dashboard and replace page
+document.addEventListener('DOMContentLoaded', async function() {
+    const token = localStorage.getItem('authToken');
+    if (token && window.location.pathname === '/') {
+        // Show loading indicator
+        document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;"><h2>Loading dashboard...</h2></div>';
+        try {
+            const resp = await fetch('/api/dashboard', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (resp.ok) {
+                const html = await resp.text();
+                document.open();
+                document.write(html);
+                document.close();
+            } else {
+                // Token invalid or expired, clear and reload
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('currentUser');
+                window.location.reload();
+            }
+        } catch (e) {
+            document.body.innerHTML = '<h2>Failed to load dashboard. Please try again.</h2>';
+        }
+    }
+});

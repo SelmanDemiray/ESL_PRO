@@ -52,7 +52,7 @@ pub fn verify_token(token: &str) -> anyhow::Result<Claims> {
 }
 
 pub async fn auth_middleware(
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
     mut request: Request,
     next: Next,
 ) -> Result<Response, StatusCode> {

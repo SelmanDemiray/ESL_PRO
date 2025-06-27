@@ -124,7 +124,7 @@ impl Database {
         .bind(user.id)
         .bind(&user.email)
         .bind(&user.password_hash)
-        .bind(&user.user_type.to_string().to_lowercase())
+        .bind(&user.user_type) // bind as enum, not string
         .bind(&user.first_name)
         .bind(&user.last_name)
         .execute(&self.pool)
@@ -135,19 +135,13 @@ impl Database {
 
     pub async fn get_user_by_email(&self, email: &str) -> anyhow::Result<Option<User>> {
         let user = sqlx::query_as::<_, User>(
-            r#"SELECT id, email, password_hash, user_type as "user_type: String", 
+            r#"SELECT id, email, password_hash, user_type, 
                first_name, last_name, created_at, updated_at, is_active 
                FROM users WHERE email = $1"#
         )
         .bind(email)
         .fetch_optional(&self.pool)
-        .await?
-        .map(|mut u| {
-            // Convert user_type string to enum
-            u.user_type = u.user_type_from_str();
-            u
-        });
-
+        .await?;
         Ok(user)
     }
 

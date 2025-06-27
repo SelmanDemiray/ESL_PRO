@@ -21,13 +21,22 @@ pub async fn home() -> Html<String> {
 pub async fn register(
     State(state): State<AppState>,
     Json(payload): Json<RegisterRequest>,
-) -> Result<Json<AuthResponse>, StatusCode> {
-    if payload.email.is_empty() || payload.password.len() < 8 {
-        return Err(StatusCode::BAD_REQUEST);
+) -> Result<Json<AuthResponse>, (StatusCode, String)> {
+    if payload.email.trim().is_empty() {
+        return Err((StatusCode::BAD_REQUEST, "Email is required.".to_string()));
+    }
+    if !payload.email.contains('@') {
+        return Err((StatusCode::BAD_REQUEST, "Invalid email address.".to_string()));
+    }
+    if payload.password.len() < 8 {
+        return Err((StatusCode::BAD_REQUEST, "Password must be at least 8 characters.".to_string()));
+    }
+    if payload.first_name.trim().is_empty() || payload.last_name.trim().is_empty() {
+        return Err((StatusCode::BAD_REQUEST, "First and last name are required.".to_string()));
     }
 
     let password_hash = hash_password(&payload.password)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Failed to hash password.".to_string()))?;
 
     let user = User {
         id: Uuid::new_v4(),
@@ -41,11 +50,16 @@ pub async fn register(
         is_active: true,
     };
 
+    // Check if user already exists
+    if let Ok(Some(_)) = state.db.get_user_by_email(&user.email).await {
+        return Err((StatusCode::CONFLICT, "Email already registered.".to_string()));
+    }
+
     state.db.create_user(&user).await
-        .map_err(|_| StatusCode::CONFLICT)?;
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to create user: {e}")))?;
 
     let token = create_token(user.id, user.user_type.clone())
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Failed to create token.".to_string()))?;
 
     let response = AuthResponse {
         token,
@@ -92,7 +106,7 @@ pub async fn login(
 
 pub async fn dashboard(
     Extension(claims): Extension<Claims>,
-    State(state): State<AppState>,
+    State(_state): State<AppState>,
 ) -> Result<Html<String>, StatusCode> {
     let dashboard_path = match claims.user_type {
         UserType::Teacher => "static/teacher-dashboard.html",
@@ -104,7 +118,7 @@ pub async fn dashboard(
 }
 
 pub async fn classroom(
-    Path(id): Path<String>,
+    Path(_id): Path<String>,
     Extension(_claims): Extension<Claims>,
 ) -> Result<Html<String>, StatusCode> {
     let classroom_html = fs::read_to_string("static/classroom.html").await.unwrap_or_else(|_| "<h1>Not found</h1>".to_string());

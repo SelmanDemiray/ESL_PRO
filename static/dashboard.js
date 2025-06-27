@@ -3,9 +3,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load user info
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser) {
+        // Set name in header and profile menu
         const nameElement = document.getElementById('userName') || document.getElementById('teacherName');
-        if (nameElement) {
-            nameElement.textContent = currentUser.first_name;
+        if (nameElement) nameElement.textContent = currentUser.first_name;
+
+        const profileName = document.getElementById('profileName');
+        if (profileName) profileName.textContent = currentUser.first_name + ' ' + currentUser.last_name;
+
+        // Set avatar initials
+        const avatar = document.getElementById('profileAvatar');
+        if (avatar) {
+            const initials = (currentUser.first_name[0] || '') + (currentUser.last_name[0] || '');
+            avatar.textContent = initials.toUpperCase();
         }
     }
 
@@ -32,6 +41,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Profile menu logic
+    const profileMenu = document.getElementById('profileMenu');
+    if (profileMenu) {
+        profileMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileMenu.classList.toggle('open');
+        });
+        // Close dropdown on outside click
+        document.addEventListener('click', function() {
+            profileMenu.classList.remove('open');
+        });
+    }
 });
 
 // Logout function
@@ -39,6 +61,12 @@ function logout() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
     window.location.href = '/';
+}
+
+// Add this function for profile navigation
+function openProfile() {
+    // Optionally, navigate to a profile page or show a modal
+    alert('Profile page coming soon!');
 }
 
 // Action functions
