@@ -15,9 +15,12 @@ pub struct User {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub is_active: bool,
+    pub zoom_access_token: Option<String>,
+    pub zoom_refresh_token: Option<String>,
+    pub zoom_token_expiry: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
 #[sqlx(type_name = "user_type", rename_all = "lowercase")]
 pub enum UserType {
     Student,
@@ -89,6 +92,19 @@ pub struct Classroom {
     pub teacher_id: Uuid,
     pub is_active: bool,
     pub created_at: DateTime<Utc>,
+    // --- Zoom integration fields ---
+    pub zoom_meeting_id: Option<String>,
+    pub zoom_join_url: Option<String>,
+}
+
+// For student meeting requests
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct MeetingRequest {
+    pub id: Uuid,
+    pub classroom_id: Uuid,
+    pub student_id: Uuid,
+    pub status: String, // "pending", "approved", "rejected"
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -100,4 +116,35 @@ pub struct DigitalBook {
     pub pdf_url: String,
     pub level: String,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct Lesson {
+    pub id: Uuid,
+    pub classroom_id: Uuid,
+    pub teacher_id: Uuid,
+    pub title: String,
+    pub description: String,
+    pub scheduled_at: DateTime<Utc>,
+    pub is_active: bool,
+    pub chat_closed: bool,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct LessonParticipant {
+    pub lesson_id: Uuid,
+    pub user_id: Uuid,
+    pub is_muted: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct LessonChatMessage {
+    pub id: Uuid,
+    pub lesson_id: Uuid,
+    pub user_id: Uuid,
+    pub username: String,
+    pub message: String,
+    pub timestamp: DateTime<Utc>,
+    pub deleted: bool,
 }

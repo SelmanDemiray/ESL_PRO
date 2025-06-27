@@ -48,21 +48,21 @@
                     <div class="stat-card">
                         <div class="stat-icon">📅</div>
                         <div class="stat-info">
-                            <h3>5</h3>
+                            <h3 id="statClassesThisWeek">0</h3>
                             <p>Classes This Week</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">⏱️</div>
                         <div class="stat-info">
-                            <h3>12hrs</h3>
+                            <h3 id="statStudyTime">0h</h3>
                             <p>Study Time</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🏆</div>
                         <div class="stat-info">
-                            <h3>B2</h3>
+                            <h3 id="statCurrentLevel">-</h3>
                             <p>Current Level</p>
                         </div>
                     </div>
@@ -92,16 +92,16 @@
 
             <section id="classrooms" class="content-section">
                 <h2>Live Classrooms</h2>
-                <div class="classroom-list">
-                    <div class="classroom-card live">
-                        <div class="classroom-status">🔴 LIVE</div>
-                        <h3>Intermediate Conversation</h3>
-                        <p>Teacher: Ms. Johnson</p>
-                        <p>12 students online</p>
-                        <button class="btn btn-primary">Join Now</button>
-                    </div>
-                    <div class="classroom-card upcoming">
-                        <div class="classroom-status">⏰ UPCOMING</div>
+                <div class="classroom-list" id="studentClassroomList">
+                    <div style="color:#64748b;">No live or upcoming classrooms. Join a class to get started.</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
                         <h3>Grammar Basics</h3>
                         <p>Teacher: Mr. Smith</p>
                         <p>Starts in 30 minutes</p>

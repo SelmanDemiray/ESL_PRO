@@ -1,5 +1,5 @@
 // Dashboard functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Load user info
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (currentUser) {
@@ -54,6 +54,207 @@ document.addEventListener('DOMContentLoaded', function() {
             profileMenu.classList.remove('open');
         });
     }
+
+    // Fetch and populate dashboard stats and classroom lists
+    const token = localStorage.getItem('authToken');
+    if (!currentUser || !token) return;
+
+    // Teacher dashboard
+    if (document.getElementById('teacherClassroomList')) {
+        // Fetch teacher's classrooms
+        const resp = await fetch('/api/dashboard', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (resp.ok) {
+            const html = await resp.text();
+            // Optionally parse and extract classroom data from HTML or use a dedicated API endpoint for JSON
+            // For now, just clear the placeholder
+            document.getElementById('teacherClassroomList').innerHTML = '';
+        }
+        // Set stats to 0 or fetch from API if available
+        document.getElementById('statTotalStudents').textContent = '0';
+        document.getElementById('statActiveClasses').textContent = '0';
+        document.getElementById('statRating').textContent = '-';
+    }
+
+    // Student dashboard
+    if (document.getElementById('studentClassroomList')) {
+        // Fetch student's classrooms
+        const resp = await fetch('/api/dashboard', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (resp.ok) {
+            const html = await resp.text();
+            // Optionally parse and extract classroom data from HTML or use a dedicated API endpoint for JSON
+            // For now, just clear the placeholder
+            document.getElementById('studentClassroomList').innerHTML = '';
+        }
+        // Set stats to 0 or fetch from API if available
+        document.getElementById('statClassesThisWeek').textContent = '0';
+        document.getElementById('statStudyTime').textContent = '0h';
+        document.getElementById('statCurrentLevel').textContent = '-';
+    }
+
+    // --- Modal logic for Create Class ---
+    window.openCreateClassModal = function() {
+        document.getElementById('createClassModal').style.display = 'block';
+    };
+    window.closeCreateClassModal = function() {
+        document.getElementById('createClassModal').style.display = 'none';
+    };
+
+    // --- Modal logic for Upload Material ---
+    window.openUploadMaterialModal = function() {
+        document.getElementById('uploadMaterialModal').style.display = 'block';
+    };
+    window.closeUploadMaterialModal = function() {
+        document.getElementById('uploadMaterialModal').style.display = 'none';
+    };
+
+    // --- THEME SWITCHER ---
+    window.toggleTheme = function() {
+        const isDark = document.getElementById('themeToggle').checked;
+        document.body.classList.toggle('dark-theme', isDark);
+        document.getElementById('themeLabel').textContent = isDark ? '☀️' : '🌙';
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    };
+    // On load, set theme from localStorage
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-theme');
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) themeToggle.checked = true;
+        document.getElementById('themeLabel').textContent = '☀️';
+    }
+
+    // --- LESSONS LOGIC ---
+    async function loadTeacherLessons() {
+        const list = document.getElementById('teacherLessonList');
+        if (!list) return;
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch('/api/lesson', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (resp.ok) {
+            const lessons = await resp.json();
+            if (lessons.length === 0) {
+                list.innerHTML = '<div style="color:#64748b;">No lessons scheduled. Click "Schedule Lesson" to add one.</div>';
+            } else {
+                list.innerHTML = lessons.map(lesson => `
+                    <div class="lesson-card">
+                        <h4>${lesson.title}</h4>
+                        <p>${lesson.description}</p>
+                        <p><b>Classroom:</b> ${lesson.classroom_id}</p>
+                        <p><b>Scheduled:</b> ${new Date(lesson.scheduled_at).toLocaleString()}</p>
+                        <div class="lesson-actions">
+                            <button class="btn btn-outline" onclick="startClass('${lesson.classroom_id}')">Start</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } else {
+            list.innerHTML = '<div style="color:#ef4444;">Failed to load lessons.</div>';
+        }
+    }
+
+    // --- SCHEDULE LOGIC ---
+    async function loadTeacherSchedule() {
+        const list = document.getElementById('teacherScheduleList');
+        if (!list) return;
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch('/api/lesson', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (resp.ok) {
+            const lessons = await resp.json();
+            const upcoming = lessons.filter(l => new Date(l.scheduled_at) > new Date());
+            if (upcoming.length === 0) {
+                list.innerHTML = '<div style="color:#64748b;">No upcoming lessons.</div>';
+            } else {
+                list.innerHTML = upcoming.map(lesson => `
+                    <div class="schedule-card">
+                        <h4>${lesson.title}</h4>
+                        <p>${lesson.description}</p>
+                        <p><b>When:</b> ${new Date(lesson.scheduled_at).toLocaleString()}</p>
+                    </div>
+                `).join('');
+            }
+        } else {
+            list.innerHTML = '<div style="color:#ef4444;">Failed to load schedule.</div>';
+        }
+    }
+
+    // --- CREATE LESSON MODAL LOGIC ---
+    window.openCreateLessonModal = async function() {
+        // Populate classroom dropdown
+        const select = document.getElementById('lessonClassroom');
+        select.innerHTML = '<option value="">Select Classroom</option>';
+        const token = localStorage.getItem('authToken');
+        const resp = await fetch('/api/classroom', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (resp.ok) {
+            const classes = await resp.json();
+            classes.forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls.id;
+                opt.textContent = cls.name;
+                select.appendChild(opt);
+            });
+        }
+        document.getElementById('createLessonModal').style.display = 'block';
+    };
+    window.closeCreateLessonModal = function() {
+        document.getElementById('createLessonModal').style.display = 'none';
+    };
+
+    // --- CREATE LESSON FORM SUBMISSION ---
+    const createLessonForm = document.getElementById('createLessonForm');
+    if (createLessonForm) {
+        createLessonForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const title = document.getElementById('lessonTitle').value.trim();
+            const description = document.getElementById('lessonDescription').value.trim();
+            const classroom_id = document.getElementById('lessonClassroom').value;
+            const scheduled_at = document.getElementById('lessonDateTime').value;
+            if (!title || !description || !classroom_id || !scheduled_at) return;
+            const token = localStorage.getItem('authToken');
+            const resp = await fetch('/api/lesson', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: crypto.randomUUID(),
+                    classroom_id,
+                    teacher_id: JSON.parse(localStorage.getItem('currentUser')).id,
+                    title,
+                    description,
+                    scheduled_at,
+                    is_active: true,
+                    chat_closed: false,
+                    created_at: new Date().toISOString()
+                })
+            });
+            if (resp.ok) {
+                closeCreateLessonModal();
+                await loadTeacherLessons();
+                await loadTeacherSchedule();
+            } else {
+                alert('Failed to schedule lesson.');
+            }
+        };
+    }
+
+    // Initial load for teacher dashboard
+    if (document.getElementById('teacherClassroomList')) {
+        await loadTeacherClassrooms();
+    }
+    if (document.getElementById('teacherMaterialList')) {
+        await loadTeacherMaterials();
+    }
+    if (document.getElementById('teacherLessonList')) {
+        await loadTeacherLessons();
+    }
+    if (document.getElementById('teacherScheduleList')) {
+        await loadTeacherSchedule();
+    }
 });
 
 // Logout function
@@ -71,7 +272,36 @@ function openProfile() {
 
 // Action functions
 function joinLiveClass() {
-    window.open('/api/classroom/live-session', '_blank');
+    // Try to get the current classroom's Zoom join URL and open it
+    const classroomId = getCurrentClassroomId(); // Implement this to get selected classroom
+    const token = localStorage.getItem('authToken');
+    fetch(`/api/classroom/${classroomId}/zoom/join`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.join_url) {
+            window.open(data.join_url, '_blank');
+        } else {
+            alert('No live Zoom meeting available for this class.');
+        }
+    });
+}
+
+// Student requests a Zoom meeting
+function requestZoomMeeting(classroomId) {
+    const token = localStorage.getItem('authToken');
+    fetch(`/api/classroom/${classroomId}/meeting-requests`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(res => {
+        if (res.status === 201) {
+            alert('Meeting request sent to teacher.');
+        } else {
+            alert('Failed to request meeting.');
+        }
+    });
 }
 
 function startClass() {

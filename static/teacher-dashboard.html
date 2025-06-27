@@ -16,13 +16,20 @@
             <nav class="sidebar-nav">
                 <a href="#overview" class="nav-item active">📊 Overview</a>
                 <a href="#classrooms" class="nav-item">🏫 My Classrooms</a>
-                <a href="#students" class="nav-item">👥 Students</a>
+                <a href="#lessons" class="nav-item">📚 Lessons</a>
                 <a href="#materials" class="nav-item">📄 Materials</a>
                 <a href="#schedule" class="nav-item">📅 Schedule</a>
                 <a href="#profile" class="nav-item">👤 Profile</a>
             </nav>
             <div class="sidebar-footer">
                 <button class="btn btn-outline" onclick="logout()">Logout</button>
+                <div class="theme-switcher">
+                    <label class="switch">
+                        <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="themeLabel">🌙</span>
+                </div>
             </div>
         </aside>
 
@@ -48,21 +55,21 @@
                     <div class="stat-card">
                         <div class="stat-icon">👥</div>
                         <div class="stat-info">
-                            <h3>45</h3>
+                            <h3 id="statTotalStudents">0</h3>
                             <p>Total Students</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">🏫</div>
                         <div class="stat-info">
-                            <h3>3</h3>
+                            <h3 id="statActiveClasses">0</h3>
                             <p>Active Classes</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon">⭐</div>
                         <div class="stat-info">
-                            <h3>4.8</h3>
+                            <h3 id="statRating">-</h3>
                             <p>Rating</p>
                         </div>
                     </div>
@@ -76,12 +83,12 @@
                             <h3>Start Live Class</h3>
                             <p>Begin your scheduled session</p>
                         </button>
-                        <button class="action-card" onclick="createClass()">
+                        <button class="action-card" onclick="openCreateClassModal()">
                             <div class="action-icon">➕</div>
                             <h3>Create New Class</h3>
                             <p>Set up a new classroom</p>
                         </button>
-                        <button class="action-card" onclick="uploadMaterial()">
+                        <button class="action-card" onclick="openUploadMaterialModal()">
                             <div class="action-icon">📤</div>
                             <h3>Upload Materials</h3>
                             <p>Add books and resources</p>
@@ -92,28 +99,83 @@
 
             <section id="classrooms" class="content-section">
                 <h2>My Classrooms</h2>
-                <div class="classroom-list">
-                    <div class="classroom-card">
-                        <h3>Intermediate Conversation</h3>
-                        <p>15 students enrolled</p>
-                        <p>Next session: Today 3:00 PM</p>
-                        <div class="classroom-actions">
-                            <button class="btn btn-primary">Start Class</button>
-                            <button class="btn btn-outline">Manage</button>
-                        </div>
-                    </div>
-                    <div class="classroom-card">
-                        <h3>Grammar Fundamentals</h3>
-                        <p>22 students enrolled</p>
-                        <p>Next session: Tomorrow 10:00 AM</p>
-                        <div class="classroom-actions">
-                            <button class="btn btn-primary">Start Class</button>
-                            <button class="btn btn-outline">Manage</button>
-                        </div>
-                    </div>
+                <div class="classroom-list" id="teacherClassroomList">
+                    <!-- Classroom cards will be rendered here -->
+                </div>
+            </section>
+
+            <section id="lessons" class="content-section">
+                <div class="lessons-header">
+                    <h2>Lesson Plans & Schedules</h2>
+                    <button class="btn btn-primary" onclick="openCreateLessonModal()">+ Schedule Lesson</button>
+                </div>
+                <div class="lesson-list" id="teacherLessonList">
+                    <!-- Lessons will be rendered here -->
+                </div>
+            </section>
+
+            <section id="materials" class="content-section">
+                <h2>Materials</h2>
+                <div class="material-list" id="teacherMaterialList">
+                    <!-- Uploaded materials will be rendered here -->
+                </div>
+            </section>
+
+            <section id="schedule" class="content-section">
+                <h2>Upcoming Lessons</h2>
+                <div class="schedule-list" id="teacherScheduleList">
+                    <!-- Upcoming lessons will be rendered here -->
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Create Class Modal -->
+    <div id="createClassModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateClassModal()">&times;</span>
+            <h2>Create New Class</h2>
+            <form id="createClassForm">
+                <input type="text" id="className" placeholder="Class Name" required>
+                <textarea id="classDescription" placeholder="Description" required></textarea>
+                <button type="submit" class="btn btn-primary btn-full">Create Class</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Material Modal -->
+    <div id="uploadMaterialModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeUploadMaterialModal()">&times;</span>
+            <h2>Upload Material</h2>
+            <form id="uploadMaterialForm" enctype="multipart/form-data">
+                <input type="text" id="materialTitle" placeholder="Title" required>
+                <input type="text" id="materialAuthor" placeholder="Author" required>
+                <textarea id="materialDescription" placeholder="Description" required></textarea>
+                <input type="text" id="materialLevel" placeholder="Level (e.g. Beginner, Intermediate)" required>
+                <input type="url" id="materialPdfUrl" placeholder="PDF URL" required>
+                <!-- For demo: use URL; for real file upload, use <input type="file"> and backend support -->
+                <button type="submit" class="btn btn-primary btn-full">Upload</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Lesson Modal -->
+    <div id="createLessonModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateLessonModal()">&times;</span>
+            <h2>Schedule New Lesson</h2>
+            <form id="createLessonForm">
+                <input type="text" id="lessonTitle" placeholder="Lesson Title" required>
+                <textarea id="lessonDescription" placeholder="Description" required></textarea>
+                <select id="lessonClassroom" required>
+                    <option value="">Select Classroom</option>
+                    <!-- Populated dynamically -->
+                </select>
+                <input type="datetime-local" id="lessonDateTime" required>
+                <button type="submit" class="btn btn-primary btn-full">Schedule Lesson</button>
+            </form>
+        </div>
     </div>
 
     <script src="/static/dashboard.js"></script>
